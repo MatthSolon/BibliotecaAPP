@@ -100,8 +100,6 @@ dotnet run
 
 ### Instalação
 ```bash
-# Clone o repositório
-git clone https://github.com/MatthSolon/biblioteca-frontend.git
 cd biblioteca-frontend
 
 # Instale as dependências
