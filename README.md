@@ -34,6 +34,7 @@ BibliotecaAPI/
 ├─ Program.cs # Configuração da aplicação
 └─ appsettings.json # Configurações, incluindo string de conexão
 
+
 biblioteca-frontend/
 │
 ├─ public/                 
