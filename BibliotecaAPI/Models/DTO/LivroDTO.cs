@@ -6,7 +6,11 @@
         public string Titulo { get; set; } = string.Empty;
         public int? AnoPublicacao { get; set; }
 
-        public  AutorDTO Autor { get; set; } = null!;
-        public GeneroDTO Genero { get; set; } = null!;
+        // IDs simples (sem objetos aninhados)
+        public int AutorID { get; set; }
+        public string? NomeAutor { get; set; }
+
+        public int GeneroID { get; set; }
+        public string? NomeGenero { get; set; }
     }
 }

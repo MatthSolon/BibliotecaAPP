@@ -184,10 +184,12 @@ export default {
       if (!this.isFormValid) return
       
       try {
-        await api.post('/Livros', {
-          ...this.novoLivro,
-          titulo: this.novoLivro.titulo.trim()
-        })
+      await api.post('/Livros', {
+        titulo: this.novoLivro.titulo.trim(),
+        anoPublicacao: this.novoLivro.anoPublicacao,
+        autorID: this.novoLivro.autorID,
+        generoID: this.novoLivro.generoID
+      })
         this.novoLivro = { titulo: '', anoPublicacao: '', autorID: '', generoID: '' }
         await this.listarLivros()
       } catch (error) {
@@ -195,21 +197,21 @@ export default {
       }
     },
     async editarLivro(livro) {
-      const novoTitulo = prompt("Novo título:", livro.titulo)
-      if (novoTitulo && novoTitulo.trim()) {
-        try {
-          await api.put(`/Livros/${livro.livroID}`, {
-            titulo: novoTitulo.trim(),
-            anoPublicacao: livro.anoPublicacao,
-            autorID: livro.autor?.autorID,
-            generoID: livro.genero?.generoID
-          })
-          await this.listarLivros()
-        } catch (error) {
-          console.error('Erro ao editar livro:', error)
-        }
+    const novoTitulo = prompt("Novo título:", livro.titulo)
+    if (novoTitulo && novoTitulo.trim()) {
+      try {
+        await api.put(`/Livros/${livro.livroID}`, {
+          titulo: novoTitulo.trim(),
+          anoPublicacao: livro.anoPublicacao,
+          autorID: livro.autorID,   
+          generoID: livro.generoID  
+        })
+        await this.listarLivros()
+      } catch (error) {
+        console.error('Erro ao editar livro:', error)
       }
-    },
+    }
+  },
     async deletarLivro(id) {
       if (confirm('Tem certeza que deseja excluir este livro?')) {
         try {

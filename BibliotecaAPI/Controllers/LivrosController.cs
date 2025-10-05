@@ -10,80 +10,66 @@ using Microsoft.EntityFrameworkCore;
 public class LivrosController : ControllerBase
 {
     private readonly AppDbContext _context;
+    public LivrosController(AppDbContext context) => _context = context;
 
-    public LivrosController(AppDbContext context)
-    {
-        _context = context;
-    }
-
-    // GET: api/livro
+    // GET: api/Livros
     [HttpGet]
     public async Task<ActionResult<ApiResponse<IEnumerable<LivroDTO>>>> GetLivros()
     {
-        var livrosDTO = await _context.Livros
+        var livros = await _context.Livros
+            .Include(l => l.Autor)
+            .Include(l => l.Genero)
             .AsNoTracking()
             .Select(l => new LivroDTO
             {
                 LivroID = l.LivroID,
                 Titulo = l.Titulo,
                 AnoPublicacao = l.AnoPublicacao,
-                Autor = new AutorDTO
-                {
-                    AutorID = l.Autor.AutorID,
-                    Nome = l.Autor.Nome
-                },
-                Genero = new GeneroDTO
-                {
-                    GeneroID = l.Genero.GeneroID,
-                    Nome = l.Genero.Nome
-                }
+                AutorID = l.AutorID,
+                NomeAutor = l.Autor.Nome,
+                GeneroID = l.GeneroID,
+                NomeGenero = l.Genero.Nome
             })
             .ToListAsync();
 
-        return Ok(new ApiResponse<IEnumerable<LivroDTO>>(200, "Livros listados com sucesso", livrosDTO));
+        return Ok(new ApiResponse<IEnumerable<LivroDTO>>(200, "Livros listados com sucesso", livros));
     }
 
-    // GET: api/livro/5
+    // GET: api/Livros/5
     [HttpGet("{id}")]
     public async Task<ActionResult<ApiResponse<LivroDTO>>> GetLivro(int id)
     {
         var livro = await _context.Livros
-            .AsNoTracking()
-            .Where(l => l.LivroID == id)
-            .Select(l => new LivroDTO
-            {
-                LivroID = l.LivroID,
-                Titulo = l.Titulo,
-                AnoPublicacao = l.AnoPublicacao,
-                Autor = new AutorDTO
-                {
-                    AutorID = l.Autor.AutorID,
-                    Nome = l.Autor.Nome
-                },
-                Genero = new GeneroDTO
-                {
-                    GeneroID = l.Genero.GeneroID,
-                    Nome = l.Genero.Nome
-                }
-            })
-            .FirstOrDefaultAsync();
+            .Include(l => l.Autor)
+            .Include(l => l.Genero)
+            .FirstOrDefaultAsync(l => l.LivroID == id);
 
         if (livro == null)
             return NotFound(new ApiResponse<string>(404, "Livro não encontrado"));
 
-        return Ok(new ApiResponse<LivroDTO>(200, "Livro encontrado com sucesso", livro));
+        var dto = new LivroDTO
+        {
+            LivroID = livro.LivroID,
+            Titulo = livro.Titulo,
+            AnoPublicacao = livro.AnoPublicacao,
+            AutorID = livro.AutorID,
+            NomeAutor = livro.Autor.Nome,
+            GeneroID = livro.GeneroID,
+            NomeGenero = livro.Genero.Nome
+        };
+
+        return Ok(new ApiResponse<LivroDTO>(200, "Livro encontrado com sucesso", dto));
     }
 
-    // POST: api/livro
+    // POST: api/Livros
     [HttpPost]
-    public async Task<ActionResult<ApiResponse<LivroDTO>>> CreateLivro(LivroDTO dto)
+    public async Task<ActionResult<ApiResponse<LivroDTO>>> CreateLivro([FromBody] LivroDTO dto)
     {
-        var autor = await _context.Autores.FindAsync(dto.Autor.AutorID);
-        var genero = await _context.Generos.FindAsync(dto.Genero.GeneroID);
+        var autor = await _context.Autores.FindAsync(dto.AutorID);
+        var genero = await _context.Generos.FindAsync(dto.GeneroID);
 
         if (autor == null)
             return NotFound(new ApiResponse<string>(404, "Autor não encontrado"));
-
         if (genero == null)
             return NotFound(new ApiResponse<string>(404, "Gênero não encontrado"));
 
@@ -91,52 +77,40 @@ public class LivrosController : ControllerBase
         {
             Titulo = dto.Titulo,
             AnoPublicacao = dto.AnoPublicacao,
-            AutorID = autor.AutorID,
-            GeneroID = genero.GeneroID
+            AutorID = dto.AutorID,
+            GeneroID = dto.GeneroID
         };
 
         _context.Livros.Add(livro);
         await _context.SaveChangesAsync();
 
         dto.LivroID = livro.LivroID;
-        dto.Autor = new AutorDTO { AutorID = autor.AutorID, Nome = autor.Nome };
-        dto.Genero = new GeneroDTO { GeneroID = genero.GeneroID, Nome = genero.Nome };
+        dto.NomeAutor = autor.Nome;
+        dto.NomeGenero = genero.Nome;
 
-        return CreatedAtAction(nameof(GetLivro), new { id = livro.LivroID }, new ApiResponse<LivroDTO>(201, "Livro criado com sucesso", dto));
+        return CreatedAtAction(nameof(GetLivro), new { id = livro.LivroID },
+            new ApiResponse<LivroDTO>(201, "Livro criado com sucesso", dto));
     }
 
-    // PUT: api/livro/5
+    // PUT: api/Livros/5
     [HttpPut("{id}")]
-    public async Task<ActionResult<ApiResponse<LivroDTO>>> UpdateLivro(int id, LivroDTO dto)
+    public async Task<ActionResult<ApiResponse<LivroDTO>>> UpdateLivro(int id, [FromBody] LivroDTO dto)
     {
         var livro = await _context.Livros.FindAsync(id);
         if (livro == null)
             return NotFound(new ApiResponse<string>(404, "Livro não encontrado"));
 
-        var autor = await _context.Autores.FindAsync(dto.Autor.AutorID);
-        var genero = await _context.Generos.FindAsync(dto.Genero.GeneroID);
-
-        if (autor == null)
-            return NotFound(new ApiResponse<string>(404, "Autor não encontrado"));
-
-        if (genero == null)
-            return NotFound(new ApiResponse<string>(404, "Gênero não encontrado"));
-
         livro.Titulo = dto.Titulo;
         livro.AnoPublicacao = dto.AnoPublicacao;
-        livro.AutorID = autor.AutorID;
-        livro.GeneroID = genero.GeneroID;
+        livro.AutorID = dto.AutorID;
+        livro.GeneroID = dto.GeneroID;
 
         await _context.SaveChangesAsync();
-
-        dto.LivroID = livro.LivroID;
-        dto.Autor = new AutorDTO { AutorID = autor.AutorID, Nome = autor.Nome };
-        dto.Genero = new GeneroDTO { GeneroID = genero.GeneroID, Nome = genero.Nome };
 
         return Ok(new ApiResponse<LivroDTO>(200, "Livro atualizado com sucesso", dto));
     }
 
-    // DELETE: api/livro/5
+    // DELETE: api/Livros/5
     [HttpDelete("{id}")]
     public async Task<ActionResult<ApiResponse<string>>> DeleteLivro(int id)
     {

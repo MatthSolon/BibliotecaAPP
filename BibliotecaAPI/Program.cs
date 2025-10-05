@@ -69,6 +69,14 @@ using (var scope = app.Services.CreateScope())
         db.Livros.AddRange(livro1, livro2);
         db.SaveChanges();
     }
+    
+    if (!db.Alunos.Any())
+    {
+        var aluno1 = new Aluno { Nome = "Maria Souza", Email = "maria@email.com" };
+        var aluno2 = new Aluno { Nome = "João Silva", Email = "joao@email.com" };
+        db.Alunos.AddRange(aluno1, aluno2);
+        db.SaveChanges();
+    }
 }
 
 if (app.Environment.IsDevelopment())
