@@ -34,6 +34,7 @@ BibliotecaAPI/
 ├─ Program.cs # Configuração da aplicação
 └─ appsettings.json # Configurações, incluindo string de conexão
 
+
 biblioteca-frontend/
 │
 ├─ public/                 
@@ -100,8 +101,6 @@ dotnet run
 
 ### Instalação
 ```bash
-# Clone o repositório
-git clone https://github.com/MatthSolon/biblioteca-frontend.git
 cd biblioteca-frontend
 
 # Instale as dependências
