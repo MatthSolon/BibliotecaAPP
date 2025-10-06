@@ -95,10 +95,6 @@ dotnet run
 
 ## 🔹 Frontend (Biblioteca Front)
 
-### Pré-requisitos
-- Node.js 18+  
-- NPM ou Yarn
-
 ### Instalação
 ```bash
 cd biblioteca-frontend
